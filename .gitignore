@@ -1,0 +1,13 @@
+.DS_Store
+]
+assets
+imgui.ini
+*.dll
+Makefile
+steamos.md
+trace.sh
+*.exe
+*.trace
+world
+*.mky
+vendor/init.sh
