@@ -11,3 +11,4 @@ trace.sh
 world
 *.mky
 vendor/init.sh
+.idea
