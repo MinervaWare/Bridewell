@@ -15,5 +15,5 @@ void initTestScene() {
 	OEMesh monkey;
 	OEParseObj("Monkey", "assets/models/monkey.obj", &monkey);
 	OECreateObjectFromMesh(&monkey, (vec3){2.0f,0.0f,0.0f});
-	OEAttachScript("Monkey", "scripts/test.lua");
+	//OEAttachScript("Monkey", "scripts/test.lua");
 }

@@ -10,6 +10,7 @@
 
 void smoothCamUpdate();
 void smoothPlayerRotUpdate();
+void smoothEntityRotate(char *ID);
 void moveEntityToPos(Entity *e, vec2 dest);
 void keyEvent();
 

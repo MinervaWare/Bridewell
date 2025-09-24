@@ -11,6 +11,9 @@
 #define WALLSIZE 2.0f
 #define HALFWSIZE ((WALLSIZE)/2.0f)
 
+#define ESIZE 0.3f
+#define HALFESIZE ((ESIZE)/2.0f)
+
 int isEntityColliding(WorldData *world, Entity *e, float x, float y) {
 	if(!world||!world->levelData) return 0;
 	vec3 pos; vec3_dup(pos, e->renderPos);
@@ -35,6 +38,35 @@ int isEntityColliding(WorldData *world, Entity *e, float x, float y) {
 			float cz = p[2]<minZ ? minZ : (p[2]>maxZ ? maxZ : p[2]);
 			float dx = p[0]-cx, dz = p[2]-cz;
 			if(dx*dx+dz*dz<r*r) return 1;
+		}
+	}
+	return 0;
+}
+
+int isEntityCollidingEntity(WorldData *world, Entity *eptr, float x, float y) {
+	EntityList *list = getEntityList();
+	vec3 pos; vec3_dup(pos, (vec3){x, 0.0f, y});
+	int worldSize = (MAPSIZE*TILESIZE)-1;
+	int i,j,k;
+	for(i=0;i<list->size;i++) {
+		Entity *curEntity = &list->entities[i];
+		if(eptr!=NULL) {
+			if(curEntity&&curEntity->renderEnabled&&curEntity!=eptr) {
+				vec3 ePos; vec3_dup(ePos, curEntity->renderPos);
+				float dx = pos[0]-ePos[0];
+				float dz = pos[2]-ePos[2];
+				float distsq = (dx*dx)+(dz*dz);
+				if(distsq<ESIZE) return 1;
+			}
+		} else { /*if eptr is null we try by testing the positions instead of the entity address*/
+			vec3 ePos; vec3_dup(ePos, curEntity->renderPos);
+			if(curEntity&&curEntity->renderEnabled&&
+					(ePos[0]!=x&&ePos[2]!=y)) {
+				float dx = pos[0]-ePos[0];
+				float dz = pos[2]-ePos[2];
+				float distsq = (dx*dx)+(dz*dz);
+				if(distsq<ESIZE) return 1;
+			}
 		}
 	}
 	return 0;

@@ -5,6 +5,9 @@
 
 #include "path.h"
 #include "chunk.h"
+#include "collision.h"
+#include "render.h"
+#include "entity.h"
 
 int canEntitySeeEntity(int *map, vec2 source, vec2 dest) {
 	if(!map) return 0;
@@ -57,6 +60,19 @@ int canEntitySeeEntity(int *map, vec2 source, vec2 dest) {
 	return wallHit;
 }
 
+int isEntityOnSamePath(Path *path) {
+	EntityList *list = getEntityList();
+	if(!list) return 0;
+	int i;
+	for(i=0;i<list->size;i++) {
+		if(!list->entities[i].currentPath) continue;
+		if(list->entities[i].currentPath==path) continue;
+		if(path->x==list->entities[i].currentPath->x&&
+				path->y==list->entities[i].currentPath->y) return 1;
+	}
+	return 0;
+}
+
 Path *findEntityPathTo(int *map, vec2 source, vec2 dest) {
 	Path *res = calloc(1, sizeof(Path));
 	vec2_dup(res->target, dest);
@@ -64,10 +80,10 @@ Path *findEntityPathTo(int *map, vec2 source, vec2 dest) {
 	res->x = source[0];
 	res->y = source[1];
 
-
 	if(!map) {freeEntityPath(res);return NULL;}
 	int mapX = (int)source[0];
 	int mapY = (int)source[1];
+
 	if(mapX==(int)dest[0]&&mapY==(int)dest[1]) {freeEntityPath(res);return NULL;}
 	float dx = dest[0]-source[0];
 	float dy = dest[1]-source[1];
@@ -81,7 +97,7 @@ Path *findEntityPathTo(int *map, vec2 source, vec2 dest) {
 	float deltaDX = (rayDirX==0) ? 1e30 : fabsf(1.0f/rayDirX);
 	float deltaDY = (rayDirY==0) ? 1e30 : fabsf(1.0f/rayDirY);
 
-	int wallHit = 1, side; /*size is just if it hit on N/S or E/W*/
+	int wallHit = 1, side; //size is just if it hit on N/S or E/W
 	int stepX, stepY;
 	if(rayDirX<0) {
 		stepX = -1;
@@ -126,6 +142,24 @@ Path *findEntityPathTo(int *map, vec2 source, vec2 dest) {
 
 	res->x = mapX;
 	res->y = mapY;
+
+	/*If we collide go to a random area around the entity*/
+	vec3 convert; vec3_dup(convert, (vec3){res->x, 0.0f, res->y});
+	vec3 wSpacePos; vec3_dup(wSpacePos, PPOSTOSPACE(convert));
+	if(isEntityOnSamePath(res)||isEntityCollidingEntity(getWorldData(), 
+				NULL, wSpacePos[0], wSpacePos[2])) {
+		int i,j;
+		for(i=mapX-1;i<mapX+1;i++) {
+			for(j=mapY-1;j<mapY+1;j++) {
+				int wsize = (MAPSIZE*TILESIZE);
+				if(i<0||i>wsize||j<0||j>wsize||map[i*wsize+j]==0||
+						isEntityCollidingEntity(getWorldData(), NULL, i, j)) continue;
+				res->x = i;
+				res->y = j;
+				return res;
+			}
+		}
+	}
 
 	return res;
 }

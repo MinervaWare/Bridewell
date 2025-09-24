@@ -295,5 +295,5 @@ void renderSurface(WorldData *world) {
 	/*Render Surface*/
 	OEDrawObjectTex(OEGetObjectFromName("Surface_Floor"), OE_TEXPOS, getTexture("surface_floor"));
 	/*Render Player*/
-	renderPlayer(world);
+	//renderPlayer(world);
 }

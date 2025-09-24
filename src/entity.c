@@ -41,6 +41,10 @@ void dumpEntityNames() {
 	WLOG(INFO_ENTITY, "- - - - - - - - - - - -");
 }
 
+EntityList *getEntityList() {
+	return globalList;
+}
+
 Entity *getEntity(char *name) {
 	Entity key = {.name = calloc(strlen(name)+1,sizeof(char))};
 	strcpy(key.name, name);

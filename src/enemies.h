@@ -21,7 +21,7 @@ enum enemyType {
 };
 
 /*This holds all the ints for the current indexed enemy to be loaded by the entity system*/
-typdef struct {
+typedef struct {
 	int crustBunny :8;
 	int crustBunnySize :8;
 } EnemyController;

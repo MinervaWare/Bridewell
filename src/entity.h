@@ -1,9 +1,10 @@
-#ifndef ENTITY_H
-#define ENTITY_H
 /* 
  * Copyright (c) 2025 MinervaWare LLC
  * Licensed under the Apache License, Version 2.0. See LICENSE.
  * */
+
+#ifndef ENTITY_H
+#define ENTITY_H
 
 #include <OE/OE.h>
 #include "path.h"
@@ -40,7 +41,8 @@ typedef struct {
 void createEntity(char *name, char *textureName, vec3 pos,
 		ENTITYFUNC renderer, ENTITYFUNC general);
 void removeEntity(char *name);
-void dumpEntityNames(); 
+void dumpEntityNames();
+EntityList *getEntityList();
 /*Binary search based on alphebetical position of first char in the name*/
 Entity *getEntity(char *name);
 void disableEntityRender(char *name);

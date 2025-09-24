@@ -12,3 +12,4 @@ world
 *.mky
 vendor/init.sh
 .idea
+src/*.o

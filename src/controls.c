@@ -61,18 +61,42 @@ void smoothEntityRotate(char *ID) {
 
 void moveEntityToPos(Entity *e, vec2 dest) {
 	int x = dest[0], y = dest[1];
-	float speed = 1.8f*OEGetFrameTime();
+	float speed = 1.4f*OEGetFrameTime();
 	float dx = x-e->pos[0];
 	float dy = y-e->pos[2];
 	float dydx = (dx*dx)+(dy*dy);
+	if(dydx<0.0001f) {
+		e->pos[0] = x;
+		e->pos[2] = y;
+		return;
+	}
 	float dist = QSQRT(dydx);
+	float d1 = (dx/dist)*speed;
+	float d2 = (dy/dist)*speed;
 	if(dist<speed) {
 		e->pos[0] = x;
 		e->pos[2] = y;
 	} else {
-		e->pos[0] += (dx/dist)*speed;
-		e->pos[2] += (dy/dist)*speed;
+		/*e->pos[0] += d1;
+		e->pos[2] += d2;*/
+		float ex = e->renderPos[0];
+		float ey = e->renderPos[2];
+		if(!isEntityCollidingEntity(getWorldData(), e, ex, ey)||
+				!isEntityColliding(getWorldData(), e, ex, ey)) {
+			e->pos[0] += d1;
+			e->pos[2] += d2;
+		} else {
+			if(!isEntityCollidingEntity(getWorldData(), e, ex+d1, ey)||
+					!isEntityColliding(getWorldData(), e, ex+d1, ey))
+				e->pos[0] += d1;
+			else if(!isEntityCollidingEntity(getWorldData(), e, ex, ey+d2)||
+					!isEntityColliding(getWorldData(), e, ex, ey+d2))
+				e->pos[2] += d2;
+		}
 	}
+	float rotang = atan2f(d1,d2);
+	if(rotang<0.0f) rotang+=2*PI;
+	e->nextRotation = RAD2DEG(rotang);
 }
 
 void keyEvent() {
