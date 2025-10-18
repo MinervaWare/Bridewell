@@ -6,6 +6,7 @@
 #include <OE/macky.h>
 #include <OE/util.h>
 #include "world.h"
+#include "game.h"
 #include "wfc.h"
 #include "color.h"
 #include "controls.h"
@@ -29,7 +30,7 @@ void initEntities(WorldData *world) {
 	vec3 playerPos;
 	int i,j;
 	for(i=0,j=0;i<MAPSIZE*TILESIZE&&j<MAPSIZE*TILESIZE;i++,j++) {
-		int current = world->levelData[(MAPSIZE*TILESIZE)*i+j];
+		int current = world->levelData[i*(MAPSIZE*TILESIZE)+j];
 		if(current==1) {
 			vec3_dup(playerPos, (vec3){i,0.0f,j});
 			break;
@@ -44,7 +45,24 @@ void initEntities(WorldData *world) {
 	createEntity("Player", "playerSkin", playerPos, NULL, (ENTITYFUNC)runPlayerEntity);
 }
 
+void testMusicPlayback(WorldData *world) {
+	playAudioSource(&world->audioHandle, A_MUSIC, (vec3){0.0f,0.0f,0.0f}, 
+			getExecDir("assets/Music/WIP.wav"), 1);
+}
 
+void test3DAudioPlayback(WorldData *world) {
+	playAudioSource(&world->audioHandle, A_EFFECT, (vec3){5.0f,0.0f,5.0f},
+			getExecDir("assets/Music/WIP.wav"), 1);
+}
+
+void initWorldAudio(WorldData *world) {
+	initAudio(&world->audioHandle);
+	world->audioData = NULL;
+	world->audioData = calloc(1, sizeof(PlayingAudio));
+	world->audioData->cap = ASIZESTEP;
+	world->audioData->size = 0;
+	world->audioData->infos = calloc(world->audioData->cap, sizeof(PlayingInfo));
+}
 
 /*
 * Loads config file, world save data, current level, etc.
@@ -55,7 +73,7 @@ void initWorld(WorldData *world) {
 	world->debugLevel = 0;
 	world->state = TITLE;
 
-	mky_data *config = mky_init("config.mky");
+	mky_data *config = mky_init(getExecDir("config.mky"));
 	if(config!=NULL) {
 		char buf[256];
 		int level = mky_getIntAt("PLAYER", "CurrentLevel");
@@ -76,6 +94,9 @@ void initWorld(WorldData *world) {
 	loadWorldData(world);
 	initEntities(world);
 	initEnemies(world);
+	initWorldAudio(world);
+	//testMusicPlayback(world);
+	//test3DAudioPlayback(world);
 
 	int i;
 	for(i=0;i<MAXLIGHTS-1;i++) {
@@ -89,17 +110,18 @@ void initWorld(WorldData *world) {
 }
 
 int isWall(WorldData *world, int x, int y) {
-	/*if(x<=0||y<=0||x>(MAPSIZE*TILESIZE)||
-			y>(MAPSIZE*TILESIZE)) return 0;*/
+	if(x<0||y<0||x>(MAPSIZE*TILESIZE)||
+			y>(MAPSIZE*TILESIZE)) return 0;
 	return world->levelData[x*(MAPSIZE*TILESIZE)+y]==0;
 }
 
 int getConnections(WorldData *world, int x, int y) {
-	if(x>(MAPSIZE*TILESIZE)||y>(MAPSIZE*TILESIZE)) return 0;
-	int n = isWall(world,x,y-1);
-	int e = isWall(world,x+1,y);
-	int w = isWall(world,x-1,y);
-	int s = isWall(world,x,y+1);
+	if(x>(MAPSIZE*TILESIZE)||y>(MAPSIZE*TILESIZE)||x<0||y<0) return 0;
+	int n=0,e=0,w=0,s=0;
+	if(y-1>=0) n = isWall(world,x,y-1);
+	if(x+1<=(MAPSIZE*TILESIZE)) e = isWall(world,x+1,y);
+	if(x-1>=0) w = isWall(world,x-1,y);
+	if(y+1<=(MAPSIZE*TILESIZE)) s = isWall(world,x,y+1);
 	return n+e+w+s;
 }
 
@@ -108,6 +130,7 @@ char *getWallModel(WorldData *world, int x, int y) {
 	if(con<=2) return "Wall";
 	if(con==3) return "Wall_3";
 	if(con==4) return "Wall_4";
+	return "Wall";
 }
 
 float getWallRot(WorldData *world, int x, int y) {
@@ -148,7 +171,7 @@ float getBorderWallRot(int x, int y, int maxX, int maxY) {
 
 int getChunkDistanceFromPlayer(int x, int y) {
 	static Entity *e = NULL;
-	if(__builtin_expect(e==NULL,0)) e = getEntity("Player");
+	if(_EXPZ(e==NULL)) e = getEntity("Player");
 	int px = (int)e->pos[0];
 	int py = (int)e->pos[2];
 	long dx = (long)x-px;
@@ -238,6 +261,19 @@ void renderCurrentMap(WorldData *world) {
 				OEDrawObject(OEGetObjectFromName("OECube"));*/
 			}
 			/*Draw outer wall*/
+			if(j==maxcoord&&i==0) {
+					OESetObjectPosition("Wall_Corner", (vec3){(i*2)-2,0.0f,(j*2)+2});
+					OERotateObject("Wall_Corner", 270.0f);
+					OEDrawObjectTex(OEGetObjectFromName("Wall_Corner"), OE_TEXPOS, getTexture("wallSkin"));
+					OESetObjectPosition("Plane", (vec3){(i*2)-2,0.0f,(j*2)+2});
+					OEDrawObjectTex(OEGetObjectFromName("Plane"), OE_TEXPOS, getTexture("floor"));
+			} else if(i==maxcoord&&j==0) {
+					OESetObjectPosition("Wall_Corner", (vec3){(i*2)+2,0.0f,(j*2)-2});
+					OERotateObject("Wall_Corner", 90.0f);
+					OEDrawObjectTex(OEGetObjectFromName("Wall_Corner"), OE_TEXPOS, getTexture("wallSkin"));
+					OESetObjectPosition("Plane", (vec3){(i*2)+2,0.0f,(j*2)-2});
+					OEDrawObjectTex(OEGetObjectFromName("Plane"), OE_TEXPOS, getTexture("floor"));
+			}
 			if(j==0||i==0) {
 				if(j==0&&i==0) {
 					OESetObjectPosition("Wall_Corner", (vec3){(i*2)-2,0.0f,(j*2)-2});
@@ -253,7 +289,8 @@ void renderCurrentMap(WorldData *world) {
 					OESetObjectPosition("Plane", (vec3){(i*2)-2,0.0f,(j*2)-2});
 					OEDrawObjectTex(OEGetObjectFromName("Plane"), OE_TEXPOS, getTexture("floor"));
 				}
-			} else if(j==maxcoord||i==maxcoord) {
+			} 
+			if(j==maxcoord||i==maxcoord) {
 				if(j==maxcoord&&i==maxcoord) {
 					OESetObjectPosition("Wall_Corner", (vec3){(i*2)+2,0.0f,(j*2)+2});
 					OERotateObject("Wall_Corner", 180.0f);
@@ -269,19 +306,8 @@ void renderCurrentMap(WorldData *world) {
 					OESetObjectPosition("Plane", (vec3){(i*2)+2,0.0f,(j*2)+2});
 					OEDrawObjectTex(OEGetObjectFromName("Plane"), OE_TEXPOS, getTexture("floor"));
 				}
-			} else if(j==maxcoord&&i==0) {
-					OESetObjectPosition("Wall_Corner", (vec3){(i*2)-2,0.0f,(j*2)+2});
-					OERotateObject("Wall_Corner", 270.0f);
-					OEDrawObjectTex(OEGetObjectFromName("Wall_Corner"), OE_TEXPOS, getTexture("wallSkin"));
-					OESetObjectPosition("Plane", (vec3){(i*2)-2,0.0f,(j*2)+2});
-					OEDrawObjectTex(OEGetObjectFromName("Plane"), OE_TEXPOS, getTexture("floor"));
-			} else if(i==maxcoord&&j==0) {
-					OESetObjectPosition("Wall_Corner", (vec3){(i*2)+2,0.0f,(j*2)-2});
-					OERotateObject("Wall_Corner", 90.0f);
-					OEDrawObjectTex(OEGetObjectFromName("Wall_Corner"), OE_TEXPOS, getTexture("wallSkin"));
-					OESetObjectPosition("Plane", (vec3){(i*2)+2,0.0f,(j*2)-2});
-					OEDrawObjectTex(OEGetObjectFromName("Plane"), OE_TEXPOS, getTexture("floor"));
-			}
+			} 
+
 		}
 	}
 
@@ -293,7 +319,5 @@ void renderCurrentMap(WorldData *world) {
 
 void renderSurface(WorldData *world) {
 	/*Render Surface*/
-	OEDrawObjectTex(OEGetObjectFromName("Surface_Floor"), OE_TEXPOS, getTexture("surface_floor"));
-	/*Render Player*/
-	//renderPlayer(world);
+
 }

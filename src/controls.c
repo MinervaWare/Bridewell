@@ -8,6 +8,7 @@
 #include "player.h"
 #include "entity.h"
 #include "collision.h"
+#include "game.h"
 
 /*[0]=RIGHT,[1]=LEFT,[2]=FRONT,[3]=BACK*/
 void moveCam(vec4 dist) {
@@ -19,7 +20,7 @@ void moveCam(vec4 dist) {
 
 void smoothCamUpdate() {
 	static Entity *player = NULL;
-	if(__builtin_expect(player==NULL,0)) player = getEntity("Player");
+	if(_EXPZ(player==NULL)) player = getEntity("Player");
 	/*This offset is the one set in OE.c*/
 	vec3 offset;
 	vec3_dup(offset, (vec3){15.0f,15.0f,15.0f});
@@ -41,7 +42,7 @@ void smoothCamUpdate() {
 
 void smoothPlayerRotUpdate() {
 	static Entity *player = NULL;
-	if(__builtin_expect(player==NULL,0)) player = getEntity("Player");
+	if(_EXPZ(player==NULL)) player = getEntity("Player");
 	float speed = 6.0f*OEGetFrameTime();
 	if(player->nextRotation-player->rotation>180.0f) {
 		float angle = -(360.0f-player->nextRotation);
@@ -71,8 +72,12 @@ void moveEntityToPos(Entity *e, vec2 dest) {
 		return;
 	}
 	float dist = QSQRT(dydx);
-	float d1 = (dx/dist)*speed;
-	float d2 = (dy/dist)*speed;
+	float d1 = (dx/dist);
+	float d2 = (dy/dist);
+	vec2 ndist; vec2_dup(ndist, (vec2){d1, d2});
+	vec2_norm(ndist, ndist);
+	d1 = ndist[0]*speed;
+	d2 = ndist[1]*speed;
 	if(dist<speed) {
 		e->pos[0] = x;
 		e->pos[2] = y;
@@ -81,16 +86,16 @@ void moveEntityToPos(Entity *e, vec2 dest) {
 		e->pos[2] += d2;*/
 		float ex = e->renderPos[0];
 		float ey = e->renderPos[2];
-		if(!isEntityCollidingEntity(getWorldData(), e, ex, ey)||
-				!isEntityColliding(getWorldData(), e, ex, ey)) {
+		if(!isEntityCollidingEntity(getWorldData(), e, ex+(d1*2.0f), ey+(d2*2.0f))&&
+				!isEntityColliding(getWorldData(), e, e->pos[0]+d1, e->pos[2]+d2)) {
 			e->pos[0] += d1;
 			e->pos[2] += d2;
 		} else {
-			if(!isEntityCollidingEntity(getWorldData(), e, ex+d1, ey)||
-					!isEntityColliding(getWorldData(), e, ex+d1, ey))
+			if(!isEntityCollidingEntity(getWorldData(), e, ex+(d1*2.0f), ey)&&
+					!isEntityColliding(getWorldData(), e, e->pos[0]+d1, e->pos[2]))
 				e->pos[0] += d1;
-			else if(!isEntityCollidingEntity(getWorldData(), e, ex, ey+d2)||
-					!isEntityColliding(getWorldData(), e, ex, ey+d2))
+			else if(!isEntityCollidingEntity(getWorldData(), e, ex, ey+(d2*2.0f))&&
+					!isEntityColliding(getWorldData(), e, e->pos[0], e->pos[2]+d2))
 				e->pos[2] += d2;
 		}
 	}
@@ -104,16 +109,19 @@ void keyEvent() {
 	float speed = OEGetFrameTime();
 	const Uint8 *kb = SDL_GetKeyboardState(NULL);
 	static Entity *player = NULL;
-	if(__builtin_expect(player==NULL,0)) player = getEntity("Player");
+	if(_EXPZ(player==NULL)) player = getEntity("Player");
 	Vec3 pos = OEGetCamPos();
 	vec2 dist;
 	vec2_dup(dist, (vec2){0.0f,0.0f}); 
+	SDL_Event event = OEGetEvent(); /*For mouse handling*/
 	
 	/*Player Movement WASD*/
 	if(kb[SDL_SCANCODE_W]) {dist[0]-=1.0f;dist[1]-=1.0f;}
 	if(kb[SDL_SCANCODE_S]) {dist[0]+=1.0f;dist[1]+=1.0f;}
 	if(kb[SDL_SCANCODE_A]) {dist[0]-=1.0f;dist[1]+=1.0f;}
 	if(kb[SDL_SCANCODE_D]) {dist[0]+=1.0f;dist[1]-=1.0f;}
+	if(kb[SDL_SCANCODE_Q]) playerQuickHeal();
+	if(kb[SDL_SCANCODE_B]) playerBuff();
 	
 	/*Player Dash*/
 	if(kb[SDL_SCANCODE_LSHIFT]) speed*=2.4f;
@@ -143,7 +151,7 @@ void keyEvent() {
 	}
 
 	/*Function controls*/
-	if(OEIsKeyPressed()) {
+	if(OEIsKeyPressed()&&!OEIsKeyRepeating()) {
 		switch(OEGetKeySym()) {
 			case SDLK_F1: {
 				WorldData *wDataPtr = getWorldData();
@@ -154,8 +162,20 @@ void keyEvent() {
 					OEDisableDebugInfo();
 					wDataPtr->debugLevel = 0;
 				}
+				break;
+			}
+			case SDLK_ESCAPE: {
+				WorldData *wDataPtr = getWorldData();
+				if(wDataPtr->state!=MENU) wDataPtr->state = MENU; 
+				else wDataPtr->state = DUNGEON;
+				break;
 			}
 		};
+	} else if(OEIsMousePressed()&&!OEIsMouseRepeating()) {
+		SDL_MouseButtonEvent *event = OEGetMouseEvent();
+		switch(event->button) {
+			case SDL_BUTTON_LEFT: playerUse(); break;
+		}
 	}
 }
 

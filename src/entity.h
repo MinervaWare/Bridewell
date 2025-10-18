@@ -7,10 +7,15 @@
 #define ENTITY_H
 
 #include <OE/OE.h>
-#include "path.h"
 
 #define MAXENTITY 100000
 #define ENTITYSTEPSIZE 10
+
+#define DEF_HEALTH 100
+#define MAX_EX_HEALTH 1000 /*max extended health for the player (gains more over time)*/
+#define MAX_HEALTH 100000
+
+#define DEF_IMMUNE 1 
 
 typedef unsigned int EID;
 typedef void (*ENTITYFUNC)();
@@ -26,9 +31,15 @@ typedef struct {
 	ENTITYFUNC render; /*Rendering the entity extras (particles)*/
 	ENTITYFUNC generalPerFrame; /*Things like movement, collision, etc.*/
 
-	/*Special game-specific things like isInChestRoom*/
+	/*
+	 * Special game-specific things like health, path, inChest, etc.
+	 * */
 	unsigned int targeting :1; /*Is the entity currently targeting another Entity*/	
-	Path *currentPath;
+	void *currentPath, *prevPath;
+	unsigned int health :8;
+	unsigned int hit :1; /*are they currently taking a hit*/
+	unsigned int hitDamage :10; /*should be set when hit is 1*/
+	unsigned int immunity :8; /*Immunity time in OETick*/
 } Entity;
 
 typedef struct {

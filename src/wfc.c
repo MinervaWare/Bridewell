@@ -17,6 +17,7 @@
  * */
 
 #include "wfc.h"
+#include "game.h"
 #include <time.h>
 #ifdef WIN32
 #include <io.h>
@@ -74,10 +75,10 @@ void *mapToFile() {
 	}
 #endif
 	char fname[256];
-	sprintf(fname, "world/out%d.map", outnum);
+	snprintf(fname, sizeof(fname), "world/out%d.map", outnum);
   //if (access(fname, F_OK) == 0) return NULL;
   //log_info("%d out", outnum);
-	FILE *file = fopen(fname, "wb");
+	FILE *file = fopen(getExecDir(fname), "wb");
 	int i,j;
 	int size = (MAPSIZE*TILESIZE)*(MAPSIZE*TILESIZE);
 	int buffer[size+size];
@@ -101,7 +102,7 @@ mapData *readMap(int level) {
 	data->lightY = calloc(MAXLIGHTS, sizeof(int));
 	char buf[256];
 	snprintf(buf, sizeof(buf), "world/out%d.map", level);
-	FILE *f = fopen(buf, "rb");
+	FILE *f = fopen(getExecDir(buf), "rb");
 	if(!f) return NULL;
 	size_t read = fread(data->map, sizeof(int), size, f);
 	if(read!=size) return NULL;

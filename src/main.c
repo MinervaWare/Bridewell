@@ -9,7 +9,7 @@
 #include "wfc.h"
 #include "world.h"
 #include "controls.h"
-
+#include "game.h"
 //Renderer *renderer;
 
 void draw() {
@@ -21,16 +21,18 @@ void event() {
 }
 
 int main(int argc, char **argv) {
-	initWFC();
-
 	Renderer renderer;
 	WorldData worldData;
 
+	initExecDir(argv[0], &worldData);
+
 	initRender(&renderer, &worldData);
+	initWFC();
+	initWorld(&worldData);
 	WorldData *wDataPtr = getWorldData();
 	RENDFUNC cimgui = NULL;
 
-	OESetCursor("assets/textures/cursor.png");
+	OESetCursor(getExecDir("assets/textures/cursor.png"));
 
 	while(OERendererIsRunning()) {
 		if(wDataPtr->debugLevel>0) cimgui = (RENDFUNC)renderDebugGui;
@@ -38,6 +40,9 @@ int main(int argc, char **argv) {
 		OEPollEvents((EVENTFUNC)event);
 		OERenderFrame((RENDFUNC)draw, cimgui);
 	}
+
+	destroyAudio(&worldData.audioHandle);
+	OECleanup();
 	
 	return 0;
 }

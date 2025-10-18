@@ -20,5 +20,8 @@
 	((vec3){(_x)[0]*2.0f,((_x)[1]*2.0f)+(_y), (_x)[2]*2.0f})
 
 void *runPlayerEntity();
+void playerUse();
+void playerQuickHeal();
+void playerBuff();
 
 #endif

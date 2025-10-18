@@ -7,6 +7,7 @@
 #define PATH_H
 #include <OE/OE.h>
 #include "world.h"
+#include "entity.h"
 
 #define MAXPATHDIST (MAPSIZE*TILESIZE)
 #define PATHSTEP 1
@@ -21,7 +22,8 @@ typedef struct {
 int canEntitySeeEntity(int *map, vec2 source, vec2 dest);
 
 /*Returns NULL if source and dest are in the same space*/
-Path *findEntityPathTo(int *map, vec2 source, vec2 dest);
+Path *findEntityPathTo(int *map, Entity *eptr, vec2 source, vec2 dest);
+int SourceToEntityWallHitCount(int *map, vec2 source, vec2 dest);
 void freeEntityPath(Path *path);
 
 #endif

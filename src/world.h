@@ -7,9 +7,9 @@
 #define WORLD_H
 
 #include <OE/OE.h>
-#include "game.h"
 #include "player.h"
 #include "wfc.h"
+#include "audio.h"
 
 #define RDISTANCE 6
 
@@ -28,6 +28,7 @@ enum dungeonStage {
 };
 
 typedef struct {
+	char *execDir;
 	int state;
 	int currentLevel, backup;
 	/* DebugLevel meanings:
@@ -37,6 +38,9 @@ typedef struct {
 	int debugLevel;
 	int *levelData;
 	mapData *mapData;
+
+	AudioHandle audioHandle;
+	PlayingAudio *audioData;
 } WorldData;
 
 void loadWorldData(WorldData *world);

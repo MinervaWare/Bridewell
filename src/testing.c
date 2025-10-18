@@ -5,6 +5,7 @@
 
 #include "testing.h"
 #include "render.h"
+#include "game.h"
 
 void renderTest() {
 	OEDrawObject(OEGetObjectFromName("Monkey"));
@@ -13,7 +14,7 @@ void renderTest() {
 
 void initTestScene() {
 	OEMesh monkey;
-	OEParseObj("Monkey", "assets/models/monkey.obj", &monkey);
+	OEParseObj("Monkey", getExecDir("assets/models/monkey.obj"), &monkey);
 	OECreateObjectFromMesh(&monkey, (vec3){2.0f,0.0f,0.0f});
 	//OEAttachScript("Monkey", "scripts/test.lua");
 }

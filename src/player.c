@@ -6,10 +6,14 @@
 #include "player.h"
 #include "entity.h"
 #include "controls.h"
+#include "audio.h"
+#include "render.h"
+#include "game.h"
 
 void *runPlayerEntity() {
+	/*Init and positions*/
 	static Entity *player = NULL;
-	if(__builtin_expect(player==NULL,0)) player = getEntity("Player");
+	if(_EXPZ(player==NULL)) player = getEntity("Player");
 	smoothCamUpdate();
 	smoothPlayerRotUpdate();
 	vec3 pos;
@@ -21,5 +25,30 @@ void *runPlayerEntity() {
 	vec3 finalLightPos;
 	vec3_dup(finalLightPos, (vec3){lightPos[0], lightPos[1]+bob, lightPos[2]});
 	OESetLightPosition("Player", finalLightPos);
+
+	/*Audio source update*/
+	updateListenPosition(&getWorldData()->audioHandle, player->renderPos);
+
+	/*Player gameplay logic*/
+	if(player->hit) player->health -= player->hitDamage;
+	return NULL;
+}
+
+void playerUse() {
+	static Entity *player = NULL;
+	if(_EXPZ(player==NULL)) player = getEntity("Player");
+		
+}
+
+void playerQuickHeal() {
+	static Entity *player = NULL;
+	if(_EXPZ(player==NULL)) player = getEntity("Player");
+
+}
+
+void playerBuff() {
+	static Entity *player = NULL;
+	if(__builtin_expect(player==NULL,0)) player = getEntity("Player");
+
 }
 

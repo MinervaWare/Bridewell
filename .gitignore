@@ -13,3 +13,6 @@ world
 vendor/init.sh
 .idea
 src/*.o
+idea.md
+scripts
+yerb

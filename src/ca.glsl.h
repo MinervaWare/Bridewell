@@ -20,11 +20,11 @@
         Uniform block 'ca_params':
             C struct: ca_params_t
             Bind slot: UB_ca_params => 1
-        Image 'ca_texture':
+        Texture 'ca_texture':
             Image type: SG_IMAGETYPE_2D
             Sample type: SG_IMAGESAMPLETYPE_FLOAT
             Multisampled: false
-            Bind slot: IMG_ca_texture => 0
+            Bind slot: VIEW_ca_texture => 0
         Sampler 'ca_smp':
             Type: SG_SAMPLERTYPE_FILTERING
             Bind slot: SMP_ca_smp => 0
@@ -42,7 +42,7 @@
 #define ATTR_ca_ca_position (0)
 #define ATTR_ca_ca_texcoord (1)
 #define UB_ca_params (1)
-#define IMG_ca_texture (0)
+#define VIEW_ca_texture (0)
 #define SMP_ca_smp (0)
 #pragma pack(push,1)
 SOKOL_SHDC_ALIGN(16) typedef struct ca_params_t {
@@ -184,16 +184,16 @@ static inline const sg_shader_desc* ca_shader_desc(sg_backend backend) {
             desc.uniform_blocks[1].glsl_uniforms[0].type = SG_UNIFORMTYPE_FLOAT4;
             desc.uniform_blocks[1].glsl_uniforms[0].array_count = 1;
             desc.uniform_blocks[1].glsl_uniforms[0].glsl_name = "ca_params";
-            desc.images[0].stage = SG_SHADERSTAGE_FRAGMENT;
-            desc.images[0].image_type = SG_IMAGETYPE_2D;
-            desc.images[0].sample_type = SG_IMAGESAMPLETYPE_FLOAT;
-            desc.images[0].multisampled = false;
+            desc.views[0].texture.stage = SG_SHADERSTAGE_FRAGMENT;
+            desc.views[0].texture.image_type = SG_IMAGETYPE_2D;
+            desc.views[0].texture.sample_type = SG_IMAGESAMPLETYPE_FLOAT;
+            desc.views[0].texture.multisampled = false;
             desc.samplers[0].stage = SG_SHADERSTAGE_FRAGMENT;
             desc.samplers[0].sampler_type = SG_SAMPLERTYPE_FILTERING;
-            desc.image_sampler_pairs[0].stage = SG_SHADERSTAGE_FRAGMENT;
-            desc.image_sampler_pairs[0].image_slot = 0;
-            desc.image_sampler_pairs[0].sampler_slot = 0;
-            desc.image_sampler_pairs[0].glsl_name = "ca_texture_ca_smp";
+            desc.texture_sampler_pairs[0].stage = SG_SHADERSTAGE_FRAGMENT;
+            desc.texture_sampler_pairs[0].view_slot = 0;
+            desc.texture_sampler_pairs[0].sampler_slot = 0;
+            desc.texture_sampler_pairs[0].glsl_name = "ca_texture_ca_smp";
             desc.label = "ca_shader";
         }
         return &desc;

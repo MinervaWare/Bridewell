@@ -1,3 +1,6 @@
 [submodule "vendor/obliviengine"]
 	path = vendor/obliviengine
 	url = https://github.com/TristanWellman/obliviengine.git
+[submodule "vendor/soloud"]
+	path = vendor/soloud
+	url = https://github.com/jarikomppa/soloud

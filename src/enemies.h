@@ -27,5 +27,6 @@ typedef struct {
 } EnemyController;
 
 void initEnemies(WorldData *world);
+void clearEnemies(WorldData *world);
 
 #endif

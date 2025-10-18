@@ -84,9 +84,33 @@ void createEntity(char *name, char *textureName, vec3 pos,
 	entity->nextRotation = 0.0f;
 	entity->renderEnabled = 1;
 	entity->targeting = 0;
+	entity->health = DEF_HEALTH;
+	entity->hit = 0;
+	entity->hitDamage = 0;
+	entity->immunity = DEF_IMMUNE;
 	entity->currentPath = NULL;
+	entity->prevPath = NULL;
 	globalList->size++;
 	sortEntitiesAlphebet();
+}
+
+void removeEntity(char *name) {
+	int i,j;
+	for(i=0;(i<globalList->size)&&(globalList->entities[i].name!=NULL)&&
+			(!strcmp(name, globalList->entities[i].name));i++);
+	if(i>=globalList->size||globalList->entities[i].name==NULL) return;
+	Entity *e = getEntity(name);
+	if(!e) return;
+	if(e->name) free(e->name);	
+	if(e->modelName) free(e->modelName);
+	if(e->texName) free(e->texName);
+	if(i<globalList->size-1) {
+		memmove(&globalList->entities[i], &globalList->entities[i+1],
+				(globalList->size-i-1)*sizeof(globalList->entities[0]));
+	}
+	globalList->size--;
+	e = &globalList->entities[globalList->size];
+	if(e) *e = (Entity){0};
 }
 
 void disableEntityRender(char *name) {
