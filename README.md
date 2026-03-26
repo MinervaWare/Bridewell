@@ -1,4 +1,6 @@
-# Bridewell Official Repository
+# Bridewell Official Archived Repository
+
+## This is the pre-pre-alpha (<0.1.0) code for the game Bridewell, all future code and releases can be found via https://www.minervaware.net.
 
 <div align="center">
   <p>
